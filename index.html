@@ -2,11 +2,8 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="theme-color" content="#e00020">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ScrIVES</title>
+<title>ScrIVES — AI Prompt Generator</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:Calibri,'Gill Sans','Trebuchet MS',sans-serif;font-size:15px;line-height:1.45;background:#e8e6df;color:#1e1e1e;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
@@ -340,6 +337,27 @@ textarea.remark::placeholder{color:#b1b1b1;font-style:italic;}
   <div class="val-err" id="valErr"></div>
 
   <!-- OPMERKINGEN -->
+  <!-- GEMINI TOOLS -->
+  <div class="fc hidden" id="fcGemini">
+    <div class="fc-title" id="geminiTitle">Gesprek via Gemini</div>
+    <div class="tip" style="margin-bottom:16px;">
+      <b>Let op:</b> deze prompt is speciaal gemaakt voor <b>Gemini</b>.<br>
+      Kopieer de prompt en plak ze op <b>gemini.google.com</b> — geen account nodig voor studenten.
+    </div>
+    <div id="geminiGesprekVelden">
+      <div class="fg">
+        <label class="fl">Scenario</label>
+        <input type="text" id="f_scenario" placeholder="Bv. in een hotel, in een kledingwinkel, op het station…">
+      </div>
+    </div>
+    <div id="geminiSchrijvenVelden" class="hidden">
+      <div class="fg">
+        <label class="fl">Type tekst</label>
+        <input type="text" id="f_typetekst" placeholder="Bv. e-mail, beschrijving, verslag…">
+      </div>
+    </div>
+  </div>
+
   <div class="fc">
     <div class="fc-title">Aanvullende opmerkingen</div>
     <div class="fg"><textarea id="f_opm" class="remark" rows="3" placeholder="Vul hier andere opmerkingen in of beschrijf zelf je oefening"></textarea></div>
@@ -422,11 +440,11 @@ const HC = [
       {id:'luisteren',naam:'Luisteren',toets:true, introTheorie:true, special:'luisteren',
        oefenSub:['Script / transcript genereren','Begripsvragen bij een script','Dictee','Invuloefening op transcript','Luisterfragment genereren','Juist/Fout-vragen','Open begripsvragen','Formulier of schema invullen','Kernwoorden noteren','Volgorde van gebeurtenissen bepalen','Fragment koppelen aan beeld','Samenvatten na het luisteren']},
       {id:'schrijven',naam:'Schrijven',toets:true, introTheorie:true, rubric:true, rubricType:'Schrijven',
-       oefenSub:['E-mail / brief','Verslag','Beschrijving','Argumentatieve tekst','Creatief schrijven']},
+       oefenSub:['E-mail / brief','Verslag','Beschrijving','Argumentatieve tekst','Creatief schrijven','Maak een tekst die automatisch wordt verbeterd — Gemini']},
       {id:'spreken',  naam:'Spreken',  toets:true, introTheorie:true, rubric:true, rubricType:'Spreken', hideOpl:true,
-       oefenSub:['Monoloog','Presentatie','Debat / discussie','Interviewsimulatie']},
+       oefenSub:['Monoloog','Presentatie','Debat / discussie','Interviewsimulatie','Voer een echt gesprek — Gemini']},
       {id:'dialoog',  naam:'Dialoog',  toets:true, introTheorie:true, rubric:true, rubricType:'Spreken', hideOpl:true,
-       oefenSub:['Rollenspel','Gesprekssimulatie','Informatiegesprek','Debat tussen twee personen']}
+       oefenSub:['Rollenspel','Gesprekssimulatie','Informatiegesprek','Debat tussen twee personen','Voer een echt gesprek — Gemini']}
     ]
   },
   { id:'groep', naam:'Groepswerk', beschr:'Samenwerkingsopdrachten',
@@ -628,6 +646,8 @@ function resetFields(){
   document.getElementById('zelfBox').classList.add('hidden');
   const fd=document.getElementById('f_duur');if(fd)fd.value='';
   ['f_nOef','f_nItems','f_leden','f_pItem','f_pKlein','f_pGroot'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('fcGemini').classList.add('hidden');
+  ['f_scenario','f_typetekst'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['chkIntro','chkTheorie','chkToets'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   document.querySelectorAll('input[name="introT"]').forEach(c=>c.checked=(c.value==='tekst'));
   document.querySelectorAll('input[name="theorieT"]').forEach(c=>c.checked=(c.value==='zinnen'));
@@ -925,6 +945,36 @@ function generatePrompt(){
     }
 
     generatedPrompt=bouwPrompt(d,curSub.naam,sel,ex);
+
+    // Gemini-tools: aparte prompt toevoegen indien geselecteerd
+    const geminiGesprek=sel.find(v=>v.includes('Gemini')&&v.includes('gesprek'));
+    const geminiSchrijven=sel.find(v=>v.includes('Gemini')&&v.includes('tekst'));
+    if(geminiGesprek||geminiSchrijven){
+      const scenario=document.getElementById('f_scenario')?.value.trim();
+      const typetekst=document.getElementById('f_typetekst')?.value.trim();
+      let gp='';
+      if(geminiGesprek){
+        gp=`Je bent een ${d.taal.toLowerCase()}-sprekende gesprekspartner voor een student van VIVES Hogeschool.\n`
+          +`Niveau van de student: ${d.niveau}.\n`
+          +(scenario?`Scenario: ${scenario}.\n`:'')
+          +(d.onderwerp?`Thema: ${d.onderwerp}.\n`:'')
+          +`\nVoer een gesprek met de student in het ${d.taal.toLowerCase()}. Pas je taalgebruik aan aan niveau ${d.niveau}.\n`
+          +`Na elke beurt van de student: reageer eerst naturel op de inhoud. Verbeter daarna eventuele taalfouten discreet maar duidelijk: geef de fout, de correcte versie en een korte uitleg in het ${d.taal.toLowerCase()}.\n`
+          +`Wacht op de eerste boodschap van de student om het gesprek te starten.`;
+      } else {
+        gp=`Je bent een schrijftutor ${d.taal.toLowerCase()} voor studenten van VIVES Hogeschool.\n`
+          +`Niveau van de student: ${d.niveau}.\n`
+          +(typetekst?`Type tekst: ${typetekst}.\n`:'')
+          +(d.onderwerp?`Thema: ${d.onderwerp}.\n`:'')
+          +`\nDe student stuurt je zo dadelijk een tekst in het ${d.taal.toLowerCase()}. Analyseer de tekst en geef:\n`
+          +`1. Eén positief element.\n`
+          +`2. Een lijst van fouten met telkens: de fout, de correcte versie en een korte uitleg in het ${d.taal.toLowerCase()}.\n`
+          +`3. De volledig gecorrigeerde versie van de tekst.\n`
+          +`Stem alles af op niveau ${d.niveau}. Wacht op de tekst van de student.`;
+      }
+      generatedPrompt+=`\n\n${'─'.repeat(50)}\nGEMINI-PROMPT — plak hieronder op gemini.google.com\n${'─'.repeat(50)}\n\n${gp}`;
+      document.getElementById('pUitleg').textContent=`Twee prompts gegenereerd. De tweede is speciaal voor Gemini (gemini.google.com).`;
+    }
   }
 
   document.getElementById('pText').textContent=generatedPrompt;
@@ -1038,15 +1088,22 @@ document.getElementById('mainGrid').innerHTML=HC.map(h=>`
   </div>`).join('');
 
 // Eén keer koppelen: checkLuister regelt zelf dat het niets doet buiten de luistercategorie
-document.getElementById('subcatInhoud').addEventListener('change',checkLuister);
-</script>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('ScrIVES PWA: service worker actief'))
-      .catch(e => console.warn('SW fout:', e));
-  });
+document.getElementById('subcatInhoud').addEventListener('change', e => {
+  checkLuister(e);
+  checkGemini();
+});
+
+function checkGemini(){
+  const aangevinkt=[...document.querySelectorAll('#subcatInhoud input[type="checkbox"]:checked')].map(c=>c.value);
+  const heeftGesprek=aangevinkt.some(v=>v.includes('Gemini')&&v.includes('gesprek'));
+  const heeftSchrijven=aangevinkt.some(v=>v.includes('Gemini')&&v.includes('tekst'));
+  const heeftGemini=heeftGesprek||heeftSchrijven;
+  document.getElementById('fcGemini').classList.toggle('hidden',!heeftGemini);
+  if(heeftGemini){
+    document.getElementById('geminiTitle').textContent=heeftGesprek?'Gesprek via Gemini':'Schrijftutor via Gemini';
+    document.getElementById('geminiGesprekVelden').classList.toggle('hidden',!heeftGesprek);
+    document.getElementById('geminiSchrijvenVelden').classList.toggle('hidden',!heeftSchrijven);
+  }
 }
 </script>
 </body>
