@@ -1,4 +1,4 @@
-const CACHE = 'scrives-v1';
+const CACHE = 'scrives-v2';
 const BESTANDEN = [
   './index.html',
   './manifest.json',
