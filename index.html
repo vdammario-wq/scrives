@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#e00020">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScrIVES — AI Prompt Generator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Calibri,'Gill Sans','Trebuchet MS',sans-serif;font-size:15px;line-height:1.45;background:#e8e6df;color:#1e1e1e;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+
+header{background:#e00020;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(224,0,32,.18);}
+header h1{font-size:18px;font-weight:bold;color:white;}
+header p{font-size:14px;font-weight:bold;color:rgba(255,255,255,0.82);margin-top:2px;}
+
+main{flex:1;}
+.container{max-width:900px;margin:0 auto;padding:30px 24px 60px;}
+
+/* INTRO */
+.page-intro{margin-bottom:24px;}
+.page-intro h2{font-size:22px;font-weight:bold;color:#e00020;margin-bottom:6px;letter-spacing:-.015em;}
+.page-intro p{max-width:620px;color:#555;font-size:14.5px;}
+
+/* BREADCRUMB */
+.bc{display:flex;align-items:center;gap:7px;margin-bottom:22px;flex-wrap:wrap;font-size:13.5px;}
+.bc-btn{background:none;border:none;color:#e00020;font-size:13.5px;font-family:inherit;font-weight:bold;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px;}
+.bc-btn:hover{text-decoration:underline;}
+.bc-sep{color:#bdbbb4;}
+.bc-cur{font-weight:bold;}
+
+/* HOME SCREENS */
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+.main-card{background:white;border-radius:14px;padding:22px 22px;cursor:pointer;border:1px solid #e4e1d9;box-shadow:0 2px 6px rgba(30,30,30,.05);transition:border-color .16s,transform .16s,box-shadow .16s;}
+.main-card:hover{border-color:#e00020;transform:translateY(-3px);box-shadow:0 10px 24px rgba(224,0,32,.14);}
+.main-card h3{font-size:16.5px;font-weight:bold;color:#e00020;margin-bottom:5px;letter-spacing:-.01em;}
+.main-card p{font-size:13px;color:#666;}
+
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px;}
+.sub-card{background:white;border:1px solid #e4e1d9;border-radius:13px;padding:18px 19px;cursor:pointer;box-shadow:0 2px 6px rgba(30,30,30,.05);transition:border-color .16s,transform .16s,box-shadow .16s;}
+.sub-card:hover{border-color:#e00020;transform:translateY(-3px);box-shadow:0 9px 20px rgba(224,0,32,.13);}
+.sub-card h4{font-size:14.5px;font-weight:bold;color:#e00020;margin-bottom:3px;}
+.sub-card p{font-size:12.5px;color:#666;}
+.sub-card ul{list-style:none;margin-top:8px;padding:0;}
+.sub-card li{font-size:12px;color:#777;padding:2px 0 2px 14px;position:relative;line-height:1.4;}
+.sub-card li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:#e00020;}
+
+/* FORM CARDS */
+.fc{background:white;border:1px solid #e4e1d9;border-radius:14px;padding:22px 24px;margin-bottom:15px;box-shadow:0 2px 6px rgba(30,30,30,.05);}
+.fc-title{font-size:16px;font-weight:bold;color:#e00020;margin-bottom:18px;padding-bottom:11px;padding-left:13px;border-bottom:1px solid #ece9e2;position:relative;letter-spacing:-.01em;}
+.fc-title::before{content:"";position:absolute;left:0;top:1px;width:4px;height:17px;border-radius:3px;background:#e00020;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+.fg{margin-bottom:15px;}
+.fg:last-child{margin-bottom:0;}
+label.fl{display:block;font-weight:bold;font-size:13.5px;margin-bottom:6px;}
+
+input[type="text"],input[type="number"],select,textarea{width:100%;padding:9px 12px;border:1px solid #e0ddd4;border-radius:9px;font-family:inherit;font-size:14px;color:#1e1e1e;background:#f4f3ef;transition:border-color .15s,box-shadow .15s,background .15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#e00020;background:#fff;box-shadow:0 0 0 3px rgba(224,0,32,.14);}
+textarea{resize:vertical;min-height:80px;line-height:1.5;}
+textarea.remark::placeholder{color:#b1b1b1;font-style:italic;}
+
+.rg{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;}
+.rc{flex-direction:column;gap:9px;}
+.ri{display:flex;align-items:flex-start;gap:8px;cursor:pointer;}
+.ri input[type="radio"],.ri input[type="checkbox"]{accent-color:#e00020;width:16px;height:16px;margin-top:2px;flex-shrink:0;}
+.it-hint{font-size:12.5px;color:#888;line-height:1.4;margin:0 0 5px;}
+.rl{display:flex;flex-direction:column;}
+.rl-main{font-size:14px;}
+.rl-desc{font-size:12px;color:#777;margin-top:2px;line-height:1.35;}
+
+.fb{margin-top:12px;padding:12px 15px;background:#f4f3ef;border-left:3px solid #e00020;border-radius:0 8px 8px 0;font-size:13.5px;}
+.fb label.fl{font-size:13px;}
+.fb input,.fb select,.fb textarea{margin-top:6px;background:white;}
+.taal-note{display:none;margin-top:10px;padding:10px 14px;background:#fff0f2;border-left:3px solid #e00020;border-radius:0 8px 8px 0;font-size:13px;}
+
+/* CHECKBOXES — chips */
+.cb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:9px;}
+.cb-item{display:flex;align-items:center;gap:9px;padding:10px 13px;background:#fff;border:1.5px solid #e0ddd4;border-radius:10px;cursor:pointer;font-size:13.5px;transition:border-color .14s,background .14s,color .14s;user-select:none;}
+.cb-item:hover{border-color:#e00020;background:#fff5f6;}
+.cb-item.checked{border-color:#e00020;background:#e00020;color:#fff;font-weight:bold;}
+.cb-item input[type="checkbox"]{accent-color:#e00020;width:16px;height:16px;flex-shrink:0;}
+.cb-item.checked input[type="checkbox"]{accent-color:#fff;}
+
+/* GRAM RADIOS — chips */
+.gr{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;background:#fff;border:1.5px solid #e0ddd4;border-radius:10px;cursor:pointer;transition:border-color .14s,background .14s;margin-bottom:9px;}
+.gr:hover{border-color:#e00020;background:#fff5f6;}
+.gr.sel{border-color:#e00020;background:#e00020;}
+.gr.sel .gr-lbl{color:#fff;}
+.gr.sel .gr-desc{color:rgba(255,255,255,.85);}
+.gr input[type="radio"]{accent-color:#e00020;width:17px;height:17px;margin-top:2px;flex-shrink:0;}
+.gr.sel input[type="radio"]{accent-color:#fff;}
+.gr-lbl{font-size:14px;font-weight:bold;}
+.gr-desc{font-size:12.5px;color:#666;margin-top:3px;line-height:1.4;}
+
+/* GROUP LABEL */
+.gl{font-size:12px;font-weight:bold;color:#e00020;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid #ece9e2;}
+.gl:first-child{margin-top:0;}
+
+/* COND EXTRA */
+.ce{margin-top:13px;padding:15px;background:#f4f3ef;border-radius:10px;border-left:3px solid #e00020;}
+.ce label.fl{font-size:13.5px;}
+.ce input,.ce select,.ce textarea{background:#fff;}
+
+/* VALIDATION */
+.val-err{background:#fff0f2;border:1.5px solid #e00020;border-radius:10px;padding:12px 16px;margin-bottom:15px;font-size:13.5px;color:#e00020;font-weight:bold;display:none;line-height:1.5;}
+
+/* BUTTONS */
+.gen-btn{background:#e00020;color:white;border:none;padding:14px 0;border-radius:10px;font-size:16px;font-weight:bold;font-family:inherit;cursor:pointer;width:100%;transition:background .18s,box-shadow .18s,transform .12s;box-shadow:0 4px 12px rgba(224,0,32,.22);}
+.gen-btn:hover{background:#c70019;box-shadow:0 6px 16px rgba(224,0,32,.28);transform:translateY(-1px);}
+.copy-btn{background:#e00020;color:white;border:none;padding:10px 22px;border-radius:9px;font-family:inherit;font-size:14px;font-weight:bold;cursor:pointer;transition:background .18s;}
+.copy-btn:hover{background:#c70019;}
+.out-btn{background:white;color:#e00020;border:1.5px solid #e00020;padding:10px 22px;border-radius:9px;font-family:inherit;font-size:14px;font-weight:bold;cursor:pointer;transition:background .18s;}
+.out-btn:hover{background:#fff0f2;}
+
+/* OUTPUT */
+.p-out{display:none;background:white;border:1.5px solid #e00020;border-radius:14px;padding:22px 24px;margin-top:20px;box-shadow:0 6px 20px rgba(224,0,32,.12);}
+.p-out h3{font-size:16px;font-weight:bold;color:#e00020;margin-bottom:6px;letter-spacing:-.01em;}
+.p-uitleg{font-size:13px;color:#555;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #ece9e2;line-height:1.5;}
+.p-text{background:#f4f3ef;border-radius:10px;padding:18px;font-size:13px;line-height:1.7;white-space:pre-wrap;font-family:Calibri,'Gill Sans','Trebuchet MS',sans-serif;border:1px solid #e8e5dd;}
+.p-actions{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap;}
+
+/* RUBRIC OFFER */
+.rub-offer{display:none;margin-top:20px;background:white;border:1px solid #e4e1d9;border-radius:14px;padding:20px 22px;border-left:5px solid #e00020;box-shadow:0 2px 6px rgba(30,30,30,.05);}
+.rub-offer h4{font-size:16px;font-weight:bold;color:#e00020;margin-bottom:8px;}
+.rub-offer p{margin-bottom:14px;color:#555;}
+
+.hidden{display:none!important;}
+@media(max-width:640px){.two-col,.main-grid{grid-template-columns:1fr;}header{padding:14px 18px;}.container{padding:22px 15px 46px;}.fc{padding:18px 16px;}.page-intro h2{font-size:20px;}}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex; align-items:center; gap:0; flex:1;">
+    <div style="background:#efeee9; border-radius:8px; padding:10px 20px; display:inline-flex; align-items:center; flex-shrink:0;">
+      <span style="font-family:Calibri,sans-serif; font-size:28px; font-weight:900; color:#1e1e1e;">Scr</span><span style="font-family:Calibri,sans-serif; font-size:28px; font-weight:700; color:#e00020;">IVES</span>
+    </div>
+    <p style="font-size:18px; font-weight:bold; color:white; flex:1; text-align:center;">Promptgenerator voor talenonderwijs</p>
+  </div>
+  <img src="data:image/png;base64,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ogyKSdiKuBWH0IVRzapqv701LW3gFyi63WRSKbKeTTHvYic02VicrtZ2Fj00h4NGNenac2eoRMoiIAAVBxt8rVGWjR1XJsoctxUhAe0dm6mvqoJckfZbf6nbXlxMTS6P7dhoT5PNZOh2O4klE6QTada2duJlUxzwqWMhm0SjCAHHiZnYZu/elLMujFHXo41/8IMfsGLFCjKZDK7r8pe//IUHH3yQFStW6P/8z/9UItW//e1v69tuu41kMllmzGKRVatWMX/+fFauXKkvvfRSJWbWueeeq+fMmcPQoUNpb29n8+bNLFy4kKeffpo33niDMAy56KKL0FoTBAFf+tKX9F//+lfy+TzpdJrNmzcThiFLlizh1ltv1ePHj1dBEHD66afrV199FcdxcF2XdDrNb37zG+bPn6/vvvtu9txzTwXwpS99Sb/88susXLmSTCYDwKpVq3j55Zf5xz/+ob/61a+qWCymisWi9n2f++67j7Vr1xrhsXHjRubOncvSpUv1N7/5TQVljff5z39eL1q0iM7OToIgIAgCli5dysKFC1m/fr2+5JJLlFKKYrHIY489pr/61a/S3d1NXV0dnudx2223MWzYMFasWKG/9a1vqVQq9YEc6w/X/JOMg6Ds00Q5XBx8ABJpcCwmnnoyraGm5CvSpLFyGqsQktYxEqGFVfCoDiy8d9byxj0P49/7Z01rDtt1odgOKodt+fg6RyHXChRBlyDfgeWWqE+moaME987Ri269nb2DOFnLphCUcLIZOtwCFjEoKfJtBaqGDKO9torGU48H28bFwUdhKasXxhSwRQHWtn7SmjVruPrqq7njjju48sorqa2tpbOzk/nz5xtE8LrrrtN33HEHjY2NDB8+nMsuu4zrrruOxsZGNmzYwMMPP8zixYu1Uoof/vCH+uWXX2bIkCHU1dVxzTXXcOWVV3LWWWfx+uuvUyqVjGmplOLKK6/UTzzxBEopvvWtb/Hwww/zX//1X4wbN4758+fzpS99iY6ODmzbZuHChaTTaS6++GJee+01dcstt1BVVcXq1auZO3cuANddd51esGABmzZt4sADD+TnP/85N9xwA+PHj+ftt9/m97//PZ7nEYahTiQSVFdXs2LFCr7+9a9z7733cumll9LY2Ijnefz5z382/tY111yjFy1aREdHB8OGDePaa6/l6quv5iMf+QirVq3i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" alt="VIVES Hogeschool" style="height:52px;width:auto;flex-shrink:0;background:#efeee9;border-radius:8px;padding:6px 12px;">
+</header>
+<main><div class="container">
+
+<!-- SCREEN 1: HOME -->
+<div id="S1">
+  <div class="page-intro"><h2>Wat wil je vandaag genereren?</h2><p>Kies een categorie en ontvang een kant-en-klare prompt voor jouw AI-tool.</p></div>
+  <div class="main-grid" id="mainGrid"></div>
+</div>
+
+<!-- SCREEN 2: LEVEL 2 -->
+<div id="S2" class="hidden">
+  <div class="bc">
+    <button class="bc-btn" onclick="goHome()">&#8592; Overzicht</button>
+    <span class="bc-sep">/</span><span class="bc-cur" id="s2Title"></span>
+  </div>
+  <div class="sub-grid" id="subGrid"></div>
+</div>
+
+<!-- SCREEN 3: FORM -->
+<div id="S3" class="hidden">
+  <div class="bc">
+    <button class="bc-btn" onclick="backFromForm()">&#8592; <span id="backLabel">Overzicht</span></button>
+    <span class="bc-sep" id="bcSep1"></span><span class="bc-cur" id="bcMain"></span>
+    <span class="bc-sep" id="bcSep2"></span><span class="bc-cur" id="bcSub"></span>
+  </div>
+
+  <!-- STANDAARD VRAGEN -->
+  <div class="fc" id="fcStd">
+    <div class="fc-title" id="fcTitle">Categorie</div>
+    <div class="two-col">
+      <div class="fg"><label class="fl" for="f_onderwerp">1. Onderwerp</label><input type="text" id="f_onderwerp" placeholder="Bv. De klimaatcrisis, reizen, technologie..."></div>
+      <div class="fg"><label class="fl" for="f_titel">2. Titel van het document</label><input type="text" id="f_titel" placeholder="Bv. Leesoefening — De klimaatcrisis"></div>
+    </div>
+    <div class="two-col">
+      <div class="fg"><label class="fl" for="f_naam">3. Jouw naam</label><input type="text" id="f_naam" placeholder="Bv. Jan Janssen"></div>
+      <div class="fg"><label class="fl" for="f_groep">4. Groep</label><input type="text" id="f_groep" placeholder="Bv. 1 Bachelor Verpleegkunde"></div>
+    </div>
+    <div class="two-col">
+      <div class="fg"><label class="fl" for="f_vak">5. Vak</label><input type="text" id="f_vak" placeholder="Bv. Medisch Engels"></div>
+      <div class="fg"><label class="fl" for="f_niveau">6. Taalniveau studenten</label>
+        <select id="f_niveau"><option value="">— Kies niveau —</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="fg"><label class="fl" for="f_taal">7. Taal van het document</label>
+        <select id="f_taal" onchange="onTaalChange()"><option value="">— Kies taal —</option><option value="Nederlands">Nederlands</option><option value="Frans">Frans</option><option value="Spaans">Spaans</option><option value="Engels">Engels</option><option value="Duits">Duits</option></select>
+        <div class="taal-note" id="taalNote">Uitleg en theorie worden afgestemd op het niveau van vraag 6.</div>
+      </div>
+      <div class="fg"><label class="fl">8. Gebruik je een bijlage?</label>
+        <div class="rg">
+          <label class="ri"><input type="radio" name="bijlage" value="nee" checked onchange="onBijlageChange('nee')"><span class="rl"><span class="rl-main">Nee</span></span></label>
+          <label class="ri"><input type="radio" name="bijlage" value="ja" onchange="onBijlageChange('ja')"><span class="rl"><span class="rl-main">Ja</span></span></label>
+        </div>
+        <div class="fb hidden" id="fbJa">Upload je bijlage samen met deze prompt in je AI-tool. De AI gebruikt de inhoud als basis.</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="fg"><label class="fl">9. Vorm van het materiaal</label>
+        <div class="rg rc">
+          <label class="ri"><input type="radio" name="vorm" value="document" checked onchange="onVormChange()"><span class="rl"><span class="rl-main">Document (Word, VIVES-stijl)</span></span></label>
+          <label class="ri"><input type="radio" name="vorm" value="html" onchange="onVormChange()"><span class="rl"><span class="rl-main">Interactieve HTML-app</span></span></label>
+          <label class="ri"><input type="radio" name="vorm" value="beiden" onchange="onVormChange()"><span class="rl"><span class="rl-main">Beiden</span></span></label>
+        </div>
+      </div>
+      <div class="fg" id="fcOpl"><label class="fl">10. Oplossingssleutel</label>
+        <div class="rg rc">
+          <label class="ri"><input type="radio" name="opl" value="geen" checked><span class="rl"><span class="rl-main">Nee</span></span></label>
+          <label class="ri"><input type="radio" name="opl" value="blok"><span class="rl"><span class="rl-main">Ja, apart blok onderaan</span></span></label>
+          <label class="ri"><input type="radio" name="opl" value="pagina"><span class="rl"><span class="rl-main">Ja, op een aparte pagina</span></span></label>
+        </div>
+      </div>
+    </div>
+    <div class="fg"><label class="fl"><span id="lsdNum">11</span>. Wil je lesdoelen opnemen bij het begin van de les?</label>
+      <div class="rg">
+        <label class="ri"><input type="radio" name="lsd" value="nee" checked><span class="rl"><span class="rl-main">Nee</span></span></label>
+        <label class="ri"><input type="radio" name="lsd" value="ja"><span class="rl"><span class="rl-main">Ja</span></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBCATEGORIEËN (checkboxes: lezen/luisteren/schrijven/spreken/dialoog/woordenschat) -->
+  <div class="fc hidden" id="fcSubcat">
+    <div class="fc-title" id="subcatTitle">Kies het type oefening</div>
+    <div id="subcatInhoud"></div>
+    <div class="ce hidden" id="luisterCe">
+      <label class="fl" style="margin-bottom:10px;">Type luisterfragment</label>
+      <div class="rg rc">
+        <label class="ri"><input type="radio" name="luisterT" value="spraak" checked><span class="rl"><span class="rl-main">Spraak</span><span class="rl-desc">Monoloog, artikel of zelfvoorstelling</span></span></label>
+        <label class="ri"><input type="radio" name="luisterT" value="dialoog"><span class="rl"><span class="rl-main">Dialoog</span><span class="rl-desc">Twee stemmen via Web Speech API — namen uit bijlage of typisch voor de taal</span></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAMMATICA RADIOS -->
+  <div class="fc hidden" id="fcGram">
+    <div class="fc-title">Kies het type grammaticamateriaal</div>
+    <div id="gramInhoud"></div>
+  </div>
+
+  <!-- DUUR / OEFENINGEN -->
+  <div class="fc hidden" id="fcDuur">
+    <div class="fc-title" id="fcDuurTitle">Tijdsinschatting en oefeningen</div>
+    <div class="fg" id="duurModeRadios">
+      <div class="rg rc">
+        <label class="ri"><input type="radio" name="duurMode" value="duur" checked onchange="onDuurMode()"><span class="rl"><span class="rl-main">De AI bepaalt het aantal oefeningen op basis van de lesduur</span></span></label>
+        <label class="ri"><input type="radio" name="duurMode" value="zelf" onchange="onDuurMode()"><span class="rl"><span class="rl-main">Ik kies zelf het aantal oefeningen en items</span></span></label>
+      </div>
+    </div>
+    <div id="duurBox"><div class="fg"><label class="fl" for="f_duur">Duur van de les</label>
+      <select id="f_duur" style="max-width:240px;"><option value="">— Kies duur —</option><option value="30 minuten">30 minuten</option><option value="45 minuten">45 minuten</option><option value="1 uur">1 uur</option><option value="1,5 uur">1,5 uur</option><option value="2 uur">2 uur</option><option value="3 uur">3 uur</option><option value="een volledige dag">Een volledige dag</option></select>
+    </div></div>
+    <div class="hidden" id="zelfBox"><div class="two-col">
+      <div class="fg"><label class="fl" for="f_nOef">Aantal oefeningen</label><input type="number" id="f_nOef" min="1" max="20" placeholder="Bv. 3" style="max-width:120px;"></div>
+      <div class="fg"><label class="fl" for="f_nItems">Items per oefening</label><input type="number" id="f_nItems" min="1" max="50" placeholder="Bv. 10" style="max-width:120px;"></div>
+    </div></div>
+  </div>
+
+  <!-- LESVOORBEREIDING SPECIALE VELDEN -->
+  <div class="fc hidden" id="fcLesSpec">
+    <div class="fc-title" id="lesSpecTitle">Extra informatie</div>
+    <div id="lesSpecInhoud"></div>
+  </div>
+
+  <!-- RUBRIC FORM (les-rubric) -->
+  <div class="fc hidden" id="fcRubricForm">
+    <div class="fc-title">Rubric-parameters</div>
+    <div id="rubricFormInhoud"></div>
+  </div>
+
+
+  <!-- INTRO & THEORIE (vaardigheden + groepswerk) -->
+  <div class="fc hidden" id="fcIntroTheorie">
+    <div class="fc-title">Opbouw van de les</div>
+    <p class="it-hint" style="margin:-12px 0 16px;">Je kunt intro en theorie allebei tegelijk aanbieden.</p>
+    <div class="fg">
+      <label class="cb-item" id="chkIntroWrap" style="display:inline-flex;"><input type="checkbox" id="chkIntro" onchange="toggleCe('introDetails',this.checked)"> Intro aanbieden</label>
+      <div class="ce hidden" id="introDetails" style="margin-top:10px;">
+        <div class="two-col">
+          <div class="fg"><label class="fl">Type intro</label><p class="it-hint">Je kunt beide vormen aanvinken.</p><div class="rg rc" style="margin-top:6px;">
+            <label class="ri"><input type="checkbox" name="introT" value="tekst" checked><span class="rl"><span class="rl-main">Tekst</span></span></label>
+            <label class="ri"><input type="checkbox" name="introT" value="luister"><span class="rl"><span class="rl-main">Luisterfragment</span></span></label>
+          </div></div>
+          <div class="fg"><label class="fl">Met oefeningen bij de intro?</label><div class="rg" style="margin-top:6px;">
+            <label class="ri"><input type="radio" name="introOef" value="nee" checked><span class="rl"><span class="rl-main">Nee</span></span></label>
+            <label class="ri"><input type="radio" name="introOef" value="ja"><span class="rl"><span class="rl-main">Ja</span></span></label>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="cb-item" style="display:inline-flex;"><input type="checkbox" id="chkTheorie" onchange="toggleCe('theorieDetails',this.checked)"> Theorie aanbieden</label>
+      <div class="ce hidden" id="theorieDetails" style="margin-top:10px;">
+        <div class="two-col">
+          <div class="fg"><label class="fl">Type theorie</label><p class="it-hint">Je kunt beide vormen aanvinken.</p><div class="rg rc" style="margin-top:6px;">
+            <label class="ri"><input type="checkbox" name="theorieT" value="zinnen" checked><span class="rl"><span class="rl-main">Nuttige zinnen</span></span></label>
+            <label class="ri"><input type="checkbox" name="theorieT" value="woordenschat"><span class="rl"><span class="rl-main">Woordenschat</span></span></label>
+          </div></div>
+          <div class="fg"><label class="fl">Met oefeningen bij de theorie?</label><div class="rg" style="margin-top:6px;">
+            <label class="ri"><input type="radio" name="theorieOef" value="nee" checked><span class="rl"><span class="rl-main">Nee</span></span></label>
+            <label class="ri"><input type="radio" name="theorieOef" value="ja"><span class="rl"><span class="rl-main">Ja</span></span></label>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GROEPSLEDEN -->
+  <div class="fc hidden" id="fcGroep">
+    <div class="fc-title">Groepsindeling</div>
+    <div class="fg"><label class="fl" for="f_leden">Hoeveel studenten telt een groep?</label>
+      <select id="f_leden" style="max-width:220px;"><option value="">— Kies —</option><option value="2">2 studenten</option><option value="3">3 studenten</option><option value="4">4 studenten</option><option value="5">5 studenten</option><option value="6 of meer">6 of meer</option></select>
+    </div>
+  </div>
+
+  <!-- TOETS (vaardigheden) -->
+  <div class="fc hidden" id="fcToets">
+    <div class="fc-title">Gebruik als toets</div>
+    <div class="fg">
+      <label class="cb-item" style="display:inline-flex;"><input type="checkbox" id="chkToets" onchange="toggleCe('toetsDetails',this.checked)"> Dit materiaal wordt als toets afgenomen</label>
+      <div class="ce hidden" id="toetsDetails" style="margin-top:10px;">
+        <div class="fg"><label class="fl">Puntensysteem</label>
+          <div class="rg rc" style="margin-top:6px;">
+            <label class="ri"><input type="radio" name="puntenM" value="ai" checked onchange="togglePunten()"><span class="rl"><span class="rl-main">AI stelt een puntenverdeling voor</span><span class="rl-desc">Op basis van de oefeningen — je kan het voorstel aanpassen</span></span></label>
+            <label class="ri"><input type="radio" name="puntenM" value="zelf" onchange="togglePunten()"><span class="rl"><span class="rl-main">Ik vul het puntensysteem zelf in</span></span></label>
+          </div>
+        </div>
+        <div class="hidden" id="puntenZelfBox">
+          <div class="two-col">
+            <div class="fg"><label class="fl" for="f_pItem">Punten per item</label><input type="text" inputmode="decimal" id="f_pItem" placeholder="Bv. 1" style="max-width:100px;"></div>
+            <div class="fg"><label class="fl" for="f_pKlein">Aftrek kleine fout</label><input type="text" inputmode="decimal" id="f_pKlein" placeholder="Bv. 0,5" style="max-width:100px;"></div>
+          </div>
+          <div class="fg"><label class="fl" for="f_pGroot">Aftrek grote fout</label><input type="text" inputmode="decimal" id="f_pGroot" placeholder="Bv. 1" style="max-width:100px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALIDATIEFOUT -->
+  <div class="val-err" id="valErr"></div>
+
+  <!-- OPMERKINGEN -->
+  <div class="fc">
+    <div class="fc-title">Aanvullende opmerkingen</div>
+    <div class="fg"><textarea id="f_opm" class="remark" rows="3" placeholder="Vul hier andere opmerkingen in of beschrijf zelf je oefening"></textarea></div>
+  </div>
+
+  <button class="gen-btn" onclick="generatePrompt()">Genereer mijn prompt</button>
+
+  <!-- PROMPT OUTPUT -->
+  <div class="p-out" id="pOut">
+    <h3>Jouw AI-prompt — klaar om te plakken</h3>
+    <p class="p-uitleg" id="pUitleg"></p>
+    <div class="p-text" id="pText"></div>
+    <div class="p-actions">
+      <button class="copy-btn" id="copyBtn" onclick="copyText('pText','copyBtn','Kopieer prompt')">Kopieer prompt</button>
+      <button class="out-btn" onclick="backFromForm()">Nieuwe prompt</button>
+    </div>
+  </div>
+
+  <!-- RUBRIC AANBOD -->
+  <div class="rub-offer" id="rubOffer">
+    <h4>Wil je ook een rubric genereren?</h4>
+    <p>Op basis van de gegevens die je al hebt ingevuld, kan ik een beoordelingsrubric toevoegen voor deze opdracht.</p>
+    <button class="out-btn" onclick="toonRubricInline()">Ja, genereer ook een rubric</button>
+  </div>
+
+  <!-- RUBRIC INLINE -->
+  <div class="fc hidden" id="rubInlineCard">
+    <div class="fc-title">Rubric — extra parameters</div>
+    <div id="rubInlineInhoud"></div>
+    <button class="gen-btn" style="margin-top:16px;" onclick="genRubricPrompt('ri_')">Genereer rubric-prompt</button>
+  </div>
+  <div class="p-out" id="rubOut">
+    <h3>Jouw rubric-prompt — klaar om te plakken</h3>
+    <div class="p-text" id="rubText"></div>
+    <div class="p-actions"><button class="copy-btn" id="copyRubBtn" onclick="copyText('rubText','copyRubBtn','Kopieer rubric-prompt')">Kopieer rubric-prompt</button></div>
+  </div>
+
+</div><!-- /S3 -->
+</div></main>
+
+<footer style="background:#1e1e1e;padding:14px 40px;text-align:center;"><p style="color:rgba(255,255,255,0.5);font-size:12.5px;"><span style="color:white;font-weight:bold;">Scr</span><span style="color:#e00020;font-weight:bold;">IVES</span> &mdash; Ontwikkeld door <span style="color:#e00020;font-weight:bold;">M. Van Dam</span> &mdash; VIVES Hogeschool &mdash; Talenonderwijs</p></footer>
+
+<script>
+// ═══ DATA ════════════════════════════════════════════════════
+
+const HC = [
+  { id:'les', naam:'Lesvoorbereiding', beschr:'Lesplannen, brainstorm, rubrics en meer',
+    sub:[
+      {id:'les-plan',      naam:'Volledig lesplan',   hideOpl:true, duurOnly:true},
+      {id:'les-schema',    naam:'Lesschema',           beschr:'Korte versie', hideOpl:true, duurOnly:true},
+      {id:'les-brainstorm',naam:'Brainstorm',        beschr:'Ideeën voor je les',special:'brainstorm',hideOpl:true,hideDuur:true},
+      {id:'les-afb', naam:'Afbeeldingenprompt', beschr:'DALL-E / Canva', special:'afbeelding', hideOpl:true, hideDuur:true, hidePreview:true},
+      {id:'les-mindmap',  naam:'Mindmap',            beschr:'Interactieve HTML',special:'mindmap',hideOpl:true,hideDuur:true},
+      {id:'les-rubric',   naam:'Rubrics',            special:'rubric',hideOpl:true,hideDuur:true},
+      {id:'les-quiz', naam:'Quiz', hideOpl:true, hidePreview:true,
+       oefenSub:['Meerkeuzevragen','Juist/Fout','Open vragen','Invuloefening','Gemengde quiz']},
+      {id:'les-diff', naam:'Differentiatiemateriaal', beschr:'Aanpassen aan niveau van studenten', hideOpl:true, hidePreview:true,
+       oefenSub:['Vereenvoudigde versie van een tekst','Uitdagingsopdracht (sterkere studenten)','Ondersteunende woordenlijst','Stappenplan voor zwakkere studenten']}
+    ]
+  },
+  { id:'theorie', naam:'Theorie & Oefeningen', beschr:'Woordenschat en grammatica',
+    sub:[
+      {id:'woord', naam:'Woordenschat', toets:true,
+        oefenSub:['Woordenlijst per thema','Contextzinnen genereren','Matching (woord — definitie)','Invuloefening','Meerkeuzevragen','Infofiche (max. 80 woorden)','Invuloefening met woordenbank','Invuloefening met vertaalbank','Woordvorming','Foute definitie herkennen','Collocaties']},
+      {id:'gram-les',     naam:'Grammaticales',          beschr:'Theorie met oefeningen', toets:true,
+        oefenSub:['Meerkeuzevragen','Invuloefening','Invuloefening met woordenbank','Invuloefening met vertaalbank','Transformatieoefening','Correctieoefening','Vertaaloefening','Aanvuloefening','Productieve oefening','Herschrijfoefening']},
+      {id:'gram-theorie', naam:'Grammatica — Theorie',    beschr:'Regels uitleggen of infofiche', hideOpl:true, hideDuur:true, special:'gram-theorie',
+        gramSub:[
+          {label:'Regels uitleggen', desc:'Volledig overzicht met uitleg, voorbeelden en schema\'s'},
+          {label:'Infofiche',        desc:'Essentie op 1 à 2 A4 — compact en schematisch overzicht'}
+        ]},
+      {id:'gram-oef',     naam:'Grammatica — Oefeningen', beschr:'Enkel oefeningen, theorie in bijlage', toets:true,
+        oefenSub:['Meerkeuzevragen','Invuloefening','Invuloefening met woordenbank','Invuloefening met vertaalbank','Transformatieoefening','Correctieoefening','Vertaaloefening','Aanvuloefening','Productieve oefening','Herschrijfoefening']}
+    ]
+  },
+  { id:'vaard', naam:'Vaardigheden', beschr:'Lezen, luisteren, schrijven, spreken, dialoog',
+    sub:[
+      {id:'lezen',    naam:'Lezen',    toets:true, introTheorie:true,
+       oefenSub:['Begripsvragen (open)','Meerkeuzevragen','Juist/Fout-vragen','Woordenschat uit de tekst','Samenvatting maken','Titel bij alinea koppelen','Volgorde van alinea\'s bepalen','Schema of tabel invullen','Zoekleesoefening','Fragment koppelen aan beeld']},
+      {id:'luisteren',naam:'Luisteren',toets:true, introTheorie:true, special:'luisteren',
+       oefenSub:['Script / transcript genereren','Begripsvragen bij een script','Dictee','Invuloefening op transcript','Luisterfragment genereren','Juist/Fout-vragen','Open begripsvragen','Formulier of schema invullen','Kernwoorden noteren','Volgorde van gebeurtenissen bepalen','Fragment koppelen aan beeld','Samenvatten na het luisteren']},
+      {id:'schrijven',naam:'Schrijven',toets:true, introTheorie:true, rubric:true, rubricType:'Schrijven',
+       oefenSub:['E-mail / brief','Verslag','Beschrijving','Argumentatieve tekst','Creatief schrijven']},
+      {id:'spreken',  naam:'Spreken',  toets:true, introTheorie:true, rubric:true, rubricType:'Spreken', hideOpl:true,
+       oefenSub:['Monoloog','Presentatie','Debat / discussie','Interviewsimulatie']},
+      {id:'dialoog',  naam:'Dialoog',  toets:true, introTheorie:true, rubric:true, rubricType:'Spreken', hideOpl:true,
+       oefenSub:['Rollenspel','Gesprekssimulatie','Informatiegesprek','Debat tussen twee personen']}
+    ]
+  },
+  { id:'groep', naam:'Groepswerk', beschr:'Samenwerkingsopdrachten',
+    sub:[
+      {id:'gr-project', toets:true,    naam:'Projectopdracht',         rubric:true,rubricType:'Groepswerk',introTheorie:true},
+      {id:'gr-debat', toets:true,      naam:'Debat',                   rubric:true,rubricType:'Groepswerk',introTheorie:true},
+      {id:'gr-presentatie', toets:true,naam:'Gezamenlijke presentatie',rubric:true,rubricType:'Groepswerk',introTheorie:true},
+      {id:'gr-rollenspel', toets:true, naam:'Rollenspel in groep',     rubric:true,rubricType:'Groepswerk',introTheorie:true},
+      {id:'gr-onderzoek', toets:true,  naam:'Onderzoeksopdracht',      rubric:true,rubricType:'Groepswerk',introTheorie:true},
+      {id:'gr-inleiding', toets:true,  naam:'Groepswerk met inleiding',rubric:true,rubricType:'Groepswerk',introTheorie:true}
+    ]
+  }
+];
+
+const TL = {
+  'Nederlands':{od:'Opgesteld door',bv:'Bestemd voor',vk:'Vak',nv:'Niveau',ld:'Lesdoelen',ti:'Titel',
+    inst:'Het volledige document wordt opgesteld in het Nederlands.',
+    ki:'Zet de volgende informatie in een kader in zandkleur (#efeee9) bovenaan het document:',
+    lk:'Antwoordkaders blijven ALTIJD leeg — vul nooit automatisch een antwoord in, ook niet als plaatshouder.',
+    ac:'BELANGRIJK: Gebruik altijd correcte Nederlandse spelling: trema (reëel, geïnteresseerd), apostrof bij verkleinwoorden (auto\'tje), koppelteken (e-mail), ij/IJ nooit vervangen door y/Y.',bv2:'Als bepaalde informatie ontbreekt of onduidelijk is, stel dan gerichte aanvullende vragen aan de docent voordat je het materiaal genereert.',
+    ldi:'Formuleer lesdoelen passend bij niveau [N] in een kader in zandkleur (#efeee9) direct na het infokader.'},
+  'Frans':{od:'Préparé par',bv:'Destiné au groupe',vk:'Cours',nv:'Niveau',ld:'Objectifs du cours',ti:'Titre',
+    inst:"L'intégralité du document est rédigée en français — y compris les instructions, explications, questions, l'encadré d'informations et les objectifs du cours.",
+    ki:"Place les informations suivantes dans un encadré couleur sable (#efeee9) en haut du document :",
+    lk:"Les cadres de réponse restent TOUJOURS vides — ne jamais pré-remplir une réponse, même à titre indicatif.",
+    ac:"IMPORTANT : Utilise systématiquement et correctement tous les accents et caractères spéciaux français : é, è, ê, ë, à, â, î, ï, ô, ù, û, ü, ç, œ, æ. Ne remplace jamais un caractère accentué par sa version non accentuée.",
+    bv2:"Si certaines informations manquent ou ne sont pas claires, pose des questions complémentaires ciblées à l'enseignant avant de générer le matériel.",
+    ldi:"Formule des objectifs du cours adaptés au niveau [N] dans un encadré couleur sable (#efeee9) directement après l'encadré d'informations."},
+  'Spaans':{od:'Preparado por',bv:'Destinado al grupo',vk:'Asignatura',nv:'Nivel',ld:'Objetivos de aprendizaje',ti:'Título',
+    inst:'Todo el documento está redactado en español — incluidas las instrucciones, explicaciones, preguntas, el recuadro de información y los objetivos de aprendizaje.',
+    ki:'Coloca la siguiente información en un recuadro de color arena (#efeee9) en la parte superior del documento:',
+    lk:'Los recuadros de respuesta permanecen SIEMPRE vacíos — nunca rellenes automáticamente una respuesta, ni siquiera como marcador.',
+    ac:'IMPORTANTE: Utiliza siempre y correctamente los acentos y caracteres especiales del español: á, é, í, ó, ú, ü, ñ, ¡, ¿. No sustituyas nunca un carácter acentuado por su versión sin acento.',
+    bv2:'Si falta información o no está clara, formula preguntas adicionales concretas al docente antes de generar el material.',
+    ldi:'Formula objetivos de aprendizaje adaptados al nivel [N] en un recuadro de color arena (#efeee9) directamente después del recuadro de información.'},
+  'Engels':{od:'Prepared by',bv:'Intended for',vk:'Course',nv:'Level',ld:'Learning objectives',ti:'Title',
+    inst:'The entire document is written in English — including instructions, explanations, questions, the information box and learning objectives.',
+    ki:'Place the following information in a sand-coloured (#efeee9) box at the top of the document:',
+    lk:'Answer boxes ALWAYS remain empty — never pre-fill an answer, even as a placeholder.',
+    ac:'Use correct punctuation throughout: apostrophes in contractions (don\'t, it\'s, I\'m), no curly/smart quotes in code, hyphens in compound adjectives.',bv2:'If any information is missing or unclear, ask the teacher targeted follow-up questions before generating the material.',
+    ldi:'Formulate learning objectives appropriate to [N] level in a sand-coloured (#efeee9) box directly after the information box.'},
+  'Duits':{od:'Erstellt von',bv:'Für die Gruppe',vk:'Fach',nv:'Niveau',ld:'Lernziele',ti:'Titel',
+    inst:'Das gesamte Dokument wird auf Deutsch verfasst — einschließlich Anweisungen, Erklärungen, Fragen, dem Informationsrahmen und Lernziele.',
+    ki:'Platziere die folgenden Informationen in einem sandfarben (#efeee9) Rahmen oben im Dokument:',
+    lk:'Antwortfelder bleiben IMMER leer — trage niemals automatisch eine Antwort ein, auch nicht als Platzhalter.',
+    ac:'WICHTIG: Verwende Umlaute und das ß immer korrekt: ä, ö, ü, Ä, Ö, Ü, ß. Ersetze niemals einen Umlaut durch seine Grundform.',
+    bv2:'Falls bestimmte Informationen fehlen oder unklar sind, stelle dem Lehrer gezielte Rückfragen, bevor du das Material erstellst.',
+    ldi:'Formuliere Lernziele passend für das Niveau [N] in einem sandfarben (#efeee9) Rahmen direkt nach dem Informationsrahmen.'}
+};
+
+const DN={'Frans':{m:'Thomas',v:'Marie'},'Spaans':{m:'Miguel',v:'Carmen'},'Engels':{m:'James',v:'Sophie'},'Duits':{m:'Klaus',v:'Anna'},'Nederlands':{m:'Luca',v:'Emma'}};
+const CRIT={Spreken:['Uitspraak','Vlotheid','Woordenschat','Grammatica','Interactie'],Schrijven:['Structuur','Inhoud','Woordenschat','Grammatica','Lay-out'],Groepswerk:['Samenwerking','Taakverdeling','Communicatie','Eindresultaat','Betrokkenheid']};
+const NL={'3':'Onvoldoende — Voldoende — Uitstekend','4':'Onvoldoende — Voldoende — Goed — Uitstekend','5':'Onvoldoende — Matig — Voldoende — Goed — Uitstekend'};
+const VIVES_LOGO_B64 = "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ogyKSdiKuBWH0IVRzapqv701LW3gFyi63WRSKbKeTTHvYic02VicrtZ2Fj00h4NGNenac2eoRMoiIAAVBxt8rVGWjR1XJsoctxUhAe0dm6mvqoJckfZbf6nbXlxMTS6P7dhoT5PNZOh2O4klE6QTada2duJlUxzwqWMhm0SjCAHHiZnYZu/elLMujFHXo41/8IMfsGLFCjKZDK7r8pe//IUHH3yQFStW6P/8z/9UItW//e1v69tuu41kMllmzGKRVatWMX/+fFauXKkvvfRSJWbWueeeq+fMmcPQoUNpb29n8+bNLFy4kKeffpo33niDMAy56KKL0FoTBAFf+tKX9F//+lfy+TzpdJrNmzcThiFLlizh1ltv1ePHj1dBEHD66afrV199FcdxcF2XdDrNb37zG+bPn6/vvvtu9txzTwXwpS99Sb/88susXLmSTCYDwKpVq3j55Zf5xz/+ob/61a+qWCymisWi9n2f++67j7Vr1xrhsXHjRubOncvSpUv1N7/5TQVljff5z39eL1q0iM7OToIgIAgCli5dysKFC1m/fr2+5JJLlFKKYrHIY489pr/61a/S3d1NXV0dnudx2223MWzYMFasWKG/9a1vqVQq9YEc6w/X/JOMg6Ds00Q5XBx8ABJpcCwmnnoyraGm5CvSpLFyGqsQktYxEqGFVfCoDiy8d9byxj0P49/7Z01rDtt1odgOKodt+fg6RyHXChRBlyDfgeWWqE+moaME987Ri269nb2DOFnLphCUcLIZOtwCFjEoKfJtBaqGDKO9torGU48H28bFwUdhKasXxhSwRQHWtn7SmjVruPrqq7njjju48sorqa2tpbOzk/nz5xtE8LrrrtN33HEHjY2NDB8+nMsuu4zrrruOxsZGNmzYwMMPP8zixYu1Uoof/vCH+uWXX2bIkCHU1dVxzTXXcOWVV3LWWWfx+uuvUyqVjGmplOLKK6/UTzzxBEopvvWtb/Hwww/zX//1X4wbN4758+fzpS99iY6ODmzbZuHChaTTaS6++GJee+01dcstt1BVVcXq1auZO3cuANddd51esGABmzZt4sADD+TnP/85N9xwA+PHj+ftt9/m97//PZ7nEYahTiQSVFdXs2LFCr7+9a9z7733cumll9LY2Ijnefz5z382/tY111yjFy1aREdHB8OGDePaa6/l6quv5iMf+QirVq3i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";
+const VIVES_LOGO_HTML = `<div style="background:#efeee9;border-radius:8px;padding:8px 14px;display:inline-flex;align-items:center;margin-bottom:16px;"><img src="data:image/png;base64,${VIVES_LOGO_B64}" alt="VIVES Hogeschool" style="height:44px;width:auto;"></div>`;
+
+const VIVES=`Gebruik de VIVES-huisstijl:\n- Titels: Calibri 14pt, vet\n- Ondertitels: Calibri 12pt, vet\n- Lopende tekst: Calibri 11pt\n- Primaire kleuren: VIVES-rood (#e00020) en Zand (#efeee9)\n- Zwart (#1e1e1e) uitsluitend voor tekst`;
+
+let curHC=null, curSub=null;
+
+// ═══ NAVIGATIE ════════════════════════════════════════════════
+
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+function showOnly(id){['S1','S2','S3'].forEach(s=>document.getElementById(s).classList.add('hidden'));show(id);}
+
+function goHome(){showOnly('S1');window.scrollTo({top:0,behavior:'smooth'});}
+
+function goLevel2(hcId){
+  curHC=HC.find(h=>h.id===hcId);
+  document.getElementById('s2Title').textContent=curHC.naam;
+  const g=document.getElementById('subGrid');
+  g.innerHTML=curHC.sub.map(s=>`
+    <div class="sub-card" onclick="goForm('${hcId}','${s.id}')">
+      <h4>${s.naam}</h4>
+      ${s.beschr?`<p>${s.beschr}</p>`:''}
+      ${s.gramSub?`<ul>${s.gramSub.map(g=>`<li>${g.label}</li>`).join('')}</ul>`:''}
+      ${s.oefenSub&&!s.hidePreview?`<ul>${s.oefenSub.slice(0,3).map(o=>`<li>${o}</li>`).join('')}${s.oefenSub.length>3?`<li>+ ${s.oefenSub.length-3} meer</li>`:''}</ul>`:''}
+    </div>`).join('');
+  showOnly('S2');window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goForm(hcId,subId){
+  curHC=HC.find(h=>h.id===hcId);
+  curSub=curHC.sub.find(s=>s.id===subId);
+  setupForm();
+  showOnly('S3');window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+function backFromForm(){
+  if(curHC){goLevel2(curHC.id);}
+  else{goHome();}
+}
+
+// ═══ FORM SETUP ═══════════════════════════════════════════════
+
+function setupForm(){
+  // Breadcrumb
+  document.getElementById('backLabel').textContent=curHC.naam;
+  document.getElementById('bcSep1').textContent='/';document.getElementById('bcMain').textContent=curHC.naam;
+  document.getElementById('bcSep2').textContent='/';document.getElementById('bcSub').textContent=curSub.naam;
+  document.getElementById('fcTitle').textContent=curSub.naam;
+
+  // Reset outputs
+  ['pOut','rubOffer','rubOut'].forEach(id=>document.getElementById(id).style.display='none');
+  hide('rubInlineCard');
+  document.getElementById('valErr').style.display='none';
+
+  // Reset form fields
+  resetFields();
+
+  // Show/hide form sections
+  const s=curSub||{};
+  const isLes=curHC&&curHC.id==='les';
+  const isGroep=curHC&&curHC.id==='groep';
+  const isVaard=curHC&&curHC.id==='vaard';
+  const isTheorie=curHC&&curHC.id==='theorie';
+
+  const isAfbeelding = s.special==='afbeelding';
+
+  // Verberg alle standaardvragen bij afbeeldingenprompt - enkel beschrijving nodig
+  document.getElementById('fcStd').classList.toggle('hidden', isAfbeelding);
+  document.getElementById('fcDuur').classList.toggle('hidden', true); // reset eerst
+
+  // Oplossingssleutel
+  const hideOpl=s.hideOpl||(s.special==='rubric')||(s.special==='mindmap')||(s.special==='afbeelding')||(s.special==='brainstorm')||isLes||(s.special==='gram-theorie');
+  document.getElementById('fcOpl').classList.toggle('hidden',hideOpl);
+
+  // Duur
+  const hideDuur=s.hideDuur||(s.special==='rubric');
+  document.getElementById('fcDuur').classList.toggle('hidden',hideDuur);
+  // Bij duurOnly: verberg de keuzeradio's, toon enkel de lesduur selector
+  const isDuurOnly = !!s.duurOnly;
+  document.getElementById('duurModeRadios').classList.toggle('hidden', isDuurOnly);
+  document.getElementById('fcDuurTitle').textContent = isDuurOnly ? 'Duur van de les(senreeks)' : 'Tijdsinschatting en oefeningen';
+  document.getElementById('duurBox').classList.remove('hidden');
+  document.getElementById('zelfBox').classList.add('hidden');
+  if(!isDuurOnly) onDuurMode();
+
+  // Subcategorie checkboxes
+  const showSub=(s.oefenSub&&s.oefenSub.length>0)&&s.special!=='rubric'&&s.special!=='gram-theorie';
+  document.getElementById('fcSubcat').classList.toggle('hidden',!showSub);
+  if(showSub){
+    if(s.id==='gram-les'||s.id==='gram-oef'){
+      document.getElementById('subcatTitle').textContent='Kies de oefenvormen';
+    } else {
+      document.getElementById('subcatTitle').textContent=`Kies het type ${curSub.naam.toLowerCase()}`;
+    }
+    document.getElementById('subcatInhoud').innerHTML=`<div class="cb-grid">${s.oefenSub.map(o=>cbHTML(o)).join('')}</div>`;
+  }
+  hide('luisterCe');
+
+  // Grammatica
+  const showGram=s.special==='gram-theorie';
+  document.getElementById('fcGram').classList.toggle('hidden',!showGram);
+  if(showGram){
+    document.getElementById('gramInhoud').innerHTML=s.gramSub.map(g=>`
+      <label class="gr">
+        <input type="radio" name="gramT" value="${g.label}" onchange="onGramChange()">
+        <div><div class="gr-lbl">${g.label}</div><div class="gr-desc">${g.desc}</div></div>
+      </label>`).join('');
+  }
+
+  // Les special
+  const showLesSpec=isLes&&['brainstorm','afbeelding','mindmap'].includes(s.special);
+  document.getElementById('fcLesSpec').classList.toggle('hidden',!showLesSpec);
+  if(showLesSpec) buildLesSpec();
+
+  // Rubric form
+  document.getElementById('fcRubricForm').classList.toggle('hidden',!(s.special==='rubric'));
+  if(s.special==='rubric') document.getElementById('rubricFormInhoud').innerHTML=rubricFormHTML('r_');
+
+  // Intro/Theorie
+  const showIT=(isVaard||isGroep);
+  document.getElementById('fcIntroTheorie').classList.toggle('hidden',!showIT);
+
+  // Groepsleden
+  document.getElementById('fcGroep').classList.toggle('hidden',!isGroep);
+
+  // Toets
+  document.getElementById('fcToets').classList.toggle('hidden',!((isVaard||isTheorie||isGroep)&&s.toets));
+
+
+  // Vorm change
+  onVormChange();
+}
+
+function resetFields(){
+  ['f_onderwerp','f_titel','f_naam','f_groep','f_vak','f_opm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('f_niveau').value='';
+  document.getElementById('f_taal').value='';
+  document.getElementById('taalNote').style.display='none';
+  document.querySelector('input[name="bijlage"][value="nee"]').checked=true;
+  hide('fbJa');
+  document.querySelector('input[name="vorm"][value="document"]').checked=true;
+  ['input[name="opl"][value="geen"]','input[name="lsd"][value="nee"]','input[name="duurMode"][value="duur"]'].forEach(s=>{const el=document.querySelector(s);if(el)el.checked=true;});
+  document.getElementById('duurBox').classList.remove('hidden');
+  document.getElementById('zelfBox').classList.add('hidden');
+  const fd=document.getElementById('f_duur');if(fd)fd.value='';
+  ['f_nOef','f_nItems','f_leden','f_pItem','f_pKlein','f_pGroot'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['chkIntro','chkTheorie','chkToets'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  document.querySelectorAll('input[name="introT"]').forEach(c=>c.checked=(c.value==='tekst'));
+  document.querySelectorAll('input[name="theorieT"]').forEach(c=>c.checked=(c.value==='zinnen'));
+  ['introOef','theorieOef'].forEach(nm=>{const el=document.querySelector(`input[name="${nm}"][value="nee"]`);if(el)el.checked=true;});
+  ['introDetails','theorieDetails','toetsDetails','puntenZelfBox'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  const pa=document.querySelector('input[name="puntenM"][value="ai"]');if(pa)pa.checked=true;
+}
+
+function buildLesSpec(){
+  const s=curSub;
+  const title=document.getElementById('lesSpecTitle');
+  const inhoud=document.getElementById('lesSpecInhoud');
+  if(s.special==='brainstorm'){
+    title.textContent='Projectomschrijving';
+    inhoud.innerHTML=`<div class="fg"><label class="fl" for="f_project">Omschrijf je project</label><textarea id="f_project" rows="5" placeholder="Omschrijf je project, de context, de doelstellingen... Hoe meer detail, hoe beter de AI je kan helpen."></textarea></div>`;
+  } else if(s.special==='afbeelding'){
+    title.textContent='Afbeeldingsbeschrijving';
+    inhoud.innerHTML=`<div class="fg"><label class="fl" for="f_afb">Beschrijf de gewenste afbeelding</label><textarea id="f_afb" rows="4" placeholder="Bv. Een drukke markt in een Spaanse stad, zonnig, levendig, cartoonachtig..."></textarea></div>`;
+  } else if(s.special==='mindmap'){
+    title.textContent='Mindmap';
+    inhoud.innerHTML=`<p style="font-size:14px;color:#555;">De AI genereert een volledig werkende interactieve HTML-mindmap in VIVES-kleuren, op basis van het onderwerp dat je bij vraag 1 invult.</p>`;
+  }
+}
+
+
+function cbHTML(s,dataCat){
+  const dc=dataCat?`data-cat="${dataCat}"`:'';
+  return `<label class="cb-item"><input type="checkbox" value="${s}" ${dc} onchange="this.closest('.cb-item').classList.toggle('checked',this.checked)"> ${s}</label>`;
+}
+
+// ═══ EVENT HANDLERS ═══════════════════════════════════════════
+
+function onTaalChange(){const t=document.getElementById('f_taal').value;document.getElementById('taalNote').style.display=(t&&t!=='Nederlands')?'block':'none';}
+function onBijlageChange(v){document.getElementById('fbJa').classList.toggle('hidden',v==='nee');}
+function onVormChange(){const v=document.querySelector('input[name="vorm"]:checked')?.value;document.getElementById('fcOpl').classList.toggle('hidden',v==='html'||!!curSub?.hideOpl);updateLsdNum();}
+function updateLsdNum(){const verborgen=document.getElementById('fcOpl').classList.contains('hidden');const el=document.getElementById('lsdNum');if(el)el.textContent=verborgen?'10':'11';}
+function onDuurMode(){const m=document.querySelector('input[name="duurMode"]:checked')?.value;document.getElementById('duurBox').classList.toggle('hidden',m!=='duur');document.getElementById('zelfBox').classList.toggle('hidden',m!=='zelf');}
+function toggleCe(id,on){document.getElementById(id).classList.toggle('hidden',!on);}
+function togglePunten(){const m=document.querySelector('input[name="puntenM"]:checked')?.value;document.getElementById('puntenZelfBox').classList.toggle('hidden',m!=='zelf');}
+function onGramChange(){document.querySelectorAll('.gr').forEach(el=>el.classList.toggle('sel',el.querySelector('input:checked')!==null));}
+function checkLuister(){const cb=document.querySelector('#subcatInhoud input[value="Luisterfragment genereren"]');document.getElementById('luisterCe').classList.toggle('hidden',!cb?.checked);}
+
+// ═══ VALIDATIE ════════════════════════════════════════════════
+
+function validate(){
+  const err=[];
+  if(!document.getElementById('f_niveau').value) err.push('Selecteer een taalniveau (vraag 6).');
+  if(!document.getElementById('f_taal').value)   err.push('Selecteer de taal van het document (vraag 7).');
+  if(!document.getElementById('fcGram').classList.contains('hidden')&&!document.querySelector('input[name="gramT"]:checked')) err.push('Kies een type grammatica-uitleg.');
+  const el=document.getElementById('valErr');
+  if(err.length){el.innerHTML=err.join('<br>');el.style.display='block';el.scrollIntoView({behavior:'smooth'});return false;}
+  el.style.display='none';return true;
+}
+
+// ═══ BASE DATA ════════════════════════════════════════════════
+
+function getBase(){
+  return{
+    onderwerp:  document.getElementById('f_onderwerp').value.trim(),
+    titel:      document.getElementById('f_titel').value.trim()      ||'[voeg titel in]',
+    naam:       document.getElementById('f_naam').value.trim()       ||'[voeg naam in]',
+    groep:      document.getElementById('f_groep').value.trim()      ||'[voeg groep in]',
+    vak:        document.getElementById('f_vak').value.trim()        ||'[voeg vak in]',
+    niveau:     document.getElementById('f_niveau').value            ||'[kies niveau]',
+    taal:       document.getElementById('f_taal').value              ||'Nederlands',
+    bijlage:    document.querySelector('input[name="bijlage"]:checked').value,
+    vorm:       document.querySelector('input[name="vorm"]:checked').value,
+    opl:        document.querySelector('input[name="opl"]:checked')?.value||'geen',
+    lsd:        document.querySelector('input[name="lsd"]:checked')?.value||'nee',
+    opm:        document.getElementById('f_opm').value.trim(),
+    duurMode:   document.querySelector('input[name="duurMode"]:checked')?.value||'duur',
+    duur:       document.getElementById('f_duur')?.value||'',
+    nOef:       document.getElementById('f_nOef')?.value||'',
+    nItems:     document.getElementById('f_nItems')?.value||''
+  };
+}
+
+// ═══ PROMPT BOUWEN ════════════════════════════════════════════
+
+function bouwPrompt(d,catNaam,subLijst,extra){
+  const L=TL[d.taal]||TL['Nederlands'];
+  const kader=`${L.ki}\n  - ${L.ti}: ${d.titel}\n  - ${L.od}: ${d.naam}\n  - ${L.bv}: ${d.groep}\n  - ${L.vk}: ${d.vak}\n  - ${L.nv}: ${d.niveau}`;
+  const lsdRegel=d.lsd==='ja'?'\n'+L.ldi.replace('[N]',d.niveau):'';
+  const bijlRegel=d.bijlage==='ja'?'Er wordt een bijlage meegestuurd. Gebruik de inhoud ervan als basis.':d.onderwerp?`Het onderwerp van de les is: ${d.onderwerp}.`:'';
+  const subRegel=subLijst&&subLijst.length?`\nHet materiaal bevat de volgende onderdelen:\n${subLijst.map(s=>'  - '+s).join('\n')}`:'';
+
+  let duurRegel='';
+  if(!document.getElementById('fcDuur').classList.contains('hidden')){
+    if(d.duurMode==='duur'&&d.duur) duurRegel=`\nDe les duurt ${d.duur}. Stem het aantal en type oefeningen automatisch af op deze duur en varieer de types.`;
+    else if(d.duurMode==='duur') duurRegel='\nStem het aantal en type oefeningen af op een gemiddelde les en varieer de types.';
+    else if(d.duurMode==='zelf') duurRegel=`\nMaak ${d.nOef||'een passend aantal'} oefeningen met elk ${d.nItems||'een passend aantal'} items per oefening.`;
+  }
+
+
+
+  const htmlBase = 'Maak een volledig werkende HTML-pagina in VIVES-kleuren (#e00020, #efeee9, #1e1e1e) met:\n' +
+    '- Een compacte HEADER bovenaan in VIVES-rood (#e00020) met drie zones (flexbox, space-between):\n' +
+    '  * Links: de tekst \"VIVES Hogeschool\" in zandkleur (#efeee9), vet — als er weinig ruimte is mag dit verkort worden tot \"VIVES\"\n' +
+    '  * Midden: de titel van het document in wit, vet\n' +
+    '  * Rechts: naam van de docent en de groep in zandkleur (#efeee9), klein\n' +
+    '- Een FOOTER onderaan in zwart (#1e1e1e) met de tekst \"Dit document werd aangemaakt via ScrIVES. AI-gegenereerde inhoud kan fouten bevatten.\" in lichtgrijze kleine letters\n' +
+    '- Tabs of subpagina\'s indien de inhoud meerdere secties heeft\n' +
+    '- Een feedbackknop die: fouten markeert in rood, de correcte versie toont in groen, per fout een uitleg geeft in de doeltaal, en een eindscore berekent met een motiverende boodschap in de doeltaal';
+
+  let vormRegel='';
+  if(d.vorm==='document'){
+    const docent_kort_docx = d.naam.includes(' ') ? d.naam.split(' ')[0][0]+'. '+d.naam.split(' ').slice(1).join(' ') : d.naam;
+    vormRegel='\nLever het materiaal op als een gestructureerd document in VIVES-huisstijl.\n\n' +
+    'HEADER (enkel op eerste pagina):\n' +
+    '- Rode lijn onderaan de header\n' +
+    '- Links: \"VIVES Hogeschool\" in VIVES-rood (#e00020), vet, Calibri 11pt — bij weinig ruimte: \"VIVES\"\n' +
+    '- Rechts: \"'+d.groep+' | '+d.titel+' | '+docent_kort_docx+'\" in lichtgrijs, Calibri 9pt — weglaat wat niet past, nooit de labels\n\n' +
+    'FOOTER (op elke pagina):\n' +
+    '- Dunne rode lijn bovenaan de footer\n' +
+    '- Links: \"Dit document werd aangemaakt via ScrIVES. AI-gegenereerde inhoud kan fouten bevatten.\" in lichtgrijs, Calibri 7pt\n' +
+    '- Rechts: \"'+d.titel+' | '+d.groep+' | p. [paginanummer]\" in lichtgrijs, Calibri 7pt — bij weinig ruimte: p. [nummer]\n' +
+    '- Afkortingsregels: voornaam docent = eerste letter + familienaam ('+docent_kort_docx+'), p. voor pagina, VIVES voor VIVES Hogeschool';
+  } else if(d.vorm==='html'){
+    vormRegel='\n' + htmlBase;
+  } else if(d.vorm==='beiden'){
+    vormRegel='\nLever twee versies:\n  1. Gestructureerd document in VIVES-huisstijl met disclaimer onderaan.\n  2. ' + htmlBase;
+  }
+
+    let oplRegel='';
+  if(d.vorm!=='html'&&!document.getElementById('fcOpl').classList.contains('hidden')){
+    if(d.opl==='blok')  oplRegel='\nVoeg een volledige oplossingssleutel toe als apart blok onderaan het document.';
+    if(d.opl==='pagina') oplRegel='\nVoeg een volledige oplossingssleutel toe op een aparte pagina.';
+  }
+
+  const acRegel=L.ac?'\n'+L.ac:'';
+  const opmRegel=d.opm?`\n\nAanvullende opmerkingen:\n${d.opm}`:'';
+
+  return `Je bent taaldocent aan de VIVES Hogeschool.
+
+${VIVES}
+
+TAAL EN OPMAAK:
+${L.inst}${acRegel}
+${L.lk}
+
+INFOKADER:
+${kader}${lsdRegel}
+
+OPDRACHT:
+Maak een ${catNaam.toLowerCase()} met de volgende specificaties:
+  ${bijlRegel}${subRegel}${duurRegel}${extra||''}${opmRegel}
+${vormRegel}${oplRegel}
+
+${L.bv2}
+
+Zorg dat het materiaal volledig klaar is voor gebruik in de klas. Verwerk de VIVES-huisstijl consequent.`;
+}
+
+// ═══ GENEREER ════════════════════════════════════════════════
+
+function generatePrompt(){
+  if(!validate()) return;
+  const d=getBase();
+  let generatedPrompt='';
+  try {
+
+  if(curSub.special==='rubric'){
+    generatedPrompt=bouwRubricTekst('r_',d);
+
+  } else if(curSub.id==='gram-les'){
+    const sel=[...document.querySelectorAll('#subcatInhoud input[type="checkbox"]:checked')].map(i=>i.value);
+    let ex='\n  Genereer een volledige grammaticales: leg de regels uit met voldoende voorbeelden.';
+    if(sel.length>0) ex+=`\n  Voeg de volgende oefenvormen toe: ${sel.join(', ')}.`;
+    else ex+='\n  Voeg passende oefeningen toe.';
+    generatedPrompt=bouwPrompt(d,'grammaticales — theorie met oefeningen',[],ex);
+
+  } else if(curSub.special==='gram-theorie'){
+    const gt=document.querySelector('input[name="gramT"]:checked')?.value||'Regels uitleggen';
+    let ex='';
+    if(gt==='Infofiche') ex='\n  Beperkte voorbeelden — alles moet passen op 1 à 2 A4. Compact en schematisch.';
+    else ex='\n  Geef een volledig overzicht van de regels met duidelijke uitleg, schema\'s en voorbeelden.';
+    d.opl='geen';
+    generatedPrompt=bouwPrompt(d,`grammatica — ${gt}`,[],ex);
+
+  } else if(curSub.id==='gram-oef'){
+    const sel=[...document.querySelectorAll('#subcatInhoud input[type="checkbox"]:checked')].map(i=>i.value);
+    let ex='\n  ENKEL oefeningen — geen theoretische uitleg. De theorie staat in bijlage.';
+    if(sel.length>0) ex+=`\n  Gebruik de volgende oefenvormen: ${sel.join(', ')}.`;
+    generatedPrompt=bouwPrompt(d,'grammatica — oefeningen',[],ex);
+
+  } else if(['les-plan','les-schema'].includes(curSub.id)){
+    generatedPrompt=bouwPrompt(d,curSub.naam,[],'\nGenereer een volledige, gebruiksklare lesvoorbereiding afgestemd op het opgegeven vak en niveau.');
+
+  } else if(curSub.id==='les-quiz'){
+    const geselecteerd=[...document.querySelectorAll('#subcatInhoud input[type="checkbox"]:checked')].map(i=>i.value);
+    generatedPrompt=bouwPrompt(d,'quiz',geselecteerd,'\nGenereer een volledige, interactieve quiz. Geef bij elke vraag directe feedback na het antwoord. Verwerk tabs of subpagina\u2019s bij meerdere onderdelen. Zorg voor een eindscore met een motiverende boodschap.');
+
+  } else if(curSub.id==='les-diff'){
+    const geselecteerd=[...document.querySelectorAll('#subcatInhoud input[type="checkbox"]:checked')].map(i=>i.value);
+    generatedPrompt=bouwPrompt(d,'differentiatiemateriaal',geselecteerd,'\nStem het materiaal nauwkeurig af op het niveau van de studenten. Maak duidelijk onderscheid tussen ondersteuning voor zwakkere studenten en uitdaging voor sterkere studenten.');
+
+  } else if(curSub.special==='brainstorm'){
+    const proj=document.getElementById('f_project')?.value.trim()||'';
+    const ex=proj?`\nProjectomschrijving: ${proj}\n\nGenereer: lesinhoud-ideeën, werkvormen (actief en passief), vaardigheden (lezen, schrijven, spreken, luisteren), evaluatiemogelijkheden en een tijdsindeling.`:'\nGenereer lesinhoud-ideeën, werkvormen, vaardigheden, evaluatiemogelijkheden en tijdsindeling.';
+    generatedPrompt=bouwPrompt(d,'brainstorm voor lesvoorbereiding',[],ex);
+
+  } else if(curSub.special==='afbeelding'){
+    const afb=document.getElementById('f_afb')?.value.trim()||'[beschrijf de gewenste afbeelding]';
+    generatedPrompt=bouwPrompt(d,'afbeeldingenprompt',[],`\nGenereer een gedetailleerde Engelstalige prompt voor DALL-E of Canva:\n${afb}\nDe prompt is concreet, visueel beschrijvend en stijlspecifiek.`);
+
+  } else if(curSub.special==='mindmap'){
+    generatedPrompt=bouwPrompt(d,'interactieve HTML-mindmap',[],'\nGenereer een volledig werkende HTML-mindmap in VIVES-kleuren (#e00020, #efeee9, #1e1e1e) met klikbare, uitklapbare knooppunten. Visualiseer de kernconcepten van het onderwerp.');
+
+  } else {
+    const sel=[...document.querySelectorAll('#subcatInhoud input[type="checkbox"]:checked')].map(i=>i.value);
+    let ex='';
+
+    // Luisterfragment
+    if(curSub.special==='luisteren'&&sel.includes('Luisterfragment genereren')){
+      const lt=document.querySelector('input[name="luisterT"]:checked')?.value||'spraak';
+      const taalCode=d.taal==='Spaans'?'es-ES':d.taal==='Frans'?'fr-FR':d.taal==='Duits'?'de-DE':d.taal==='Engels'?'en-GB':'nl-NL';
+      const taalPrefix=taalCode.substring(0,2);
+      const n=DN[d.taal]||{m:'Jan',v:'Marie'};
+
+      const vormInfo=d.vorm==='document'
+        ?'Lever de oefeningen als Word-document (VIVES-huisstijl). Lever het luisterfragment als een APART volledig werkend HTML-bestand.'
+        :d.vorm==='beiden'
+        ?'Lever de oefeningen als Word-document EN als HTML. In de HTML-versie zit de afspeelfunctie voor het luisterfragment ingebouwd.'
+        :'Lever alles als HTML-pagina met oefeningen en afspeelfunctie.';
+
+      const stemLogica='let allVoices=[];let manStem=null;let vrouwStem=null;'
+        +'function laadStemmen(){'
+        +'allVoices=speechSynthesis.getVoices().filter(v=>v.lang.startsWith(\"'+taalPrefix+'\"));'
+        +'manStem=allVoices.find(v=>/male|man/i.test(v.name))||allVoices[1]||allVoices[0];'
+        +'vrouwStem=allVoices.find(v=>/female|woman|vrouw/i.test(v.name))||allVoices[0];}'
+        +'window.speechSynthesis.onvoiceschanged=laadStemmen;laadStemmen();'
+        +'function speekUtt(tekst,stem){speechSynthesis.cancel();'
+        +'const utt=new SpeechSynthesisUtterance(tekst);utt.lang=\"'+taalCode+'\";'
+        +'if(stem)utt.voice=stem;speechSynthesis.speak(utt);}';
+
+      const playerKnoppen='Maak een audioplayer-interface in VIVES-kleuren (#e00020, #efeee9) met drie rijen:\n'
+        +'Rij 1 afspeelknoppen: Afspelen (speechSynthesis.speak), Pauzeer (speechSynthesis.pause()), Hervat (speechSynthesis.resume()), Stop (speechSynthesis.cancel()).\n'
+        +'Rij 2 snelheid: drie knoppen Traag (utt.rate=0.7), Normaal (utt.rate=1.0), Snel (utt.rate=1.4) actieve snelheid gemarkeerd in VIVES-rood.\n'
+        +'Rij 3 tekst: knop Toon tekst (toont '+d.taal.toLowerCase()+' tekst) en knop Toon tekst + vertaling (toont '+d.taal.toLowerCase()+' + Nederlandse vertaling in twee kolommen).\n'
+        +'Stijl de player als een echte audioplayer met afgeronde hoeken en VIVES-kleuren.';
+
+      if(lt==='dialoog'){
+        const nm=d.bijlage==='ja'?'Gebruik namen uit de bijlage, anders typische namen voor deze taal.':('Gebruik de namen '+n.m+' (man) en '+n.v+' (vrouw).');
+        ex+='\n\nLUISTERFRAGMENT - DIALOOG:\n'+vormInfo+'\n';
+        ex+='Schrijf een dialoog tussen twee personages. '+nm+'\n';
+        ex+=stemLogica+'\n';
+        ex+='Wijs '+n.m+' de MANNENSTEM toe (manStem) en '+n.v+' de VROUWENSTEM (vrouwStem).\n';
+        ex+='Bij afspelen: lees elke beurt voor met de juiste stem, wacht op utt.onend voor de volgende beurt.\n';
+
+        ex+=playerKnoppen;
+        if(d.taal==='Spaans') ex+='\nGebruik UITSLUITEND lang es-ES (Spanje), NIET es-MX of es-US.';
+      } else {
+        ex+='\n\nLUISTERFRAGMENT - SPRAAK:\n'+vormInfo+'\n';
+        ex+='Schrijf een monoloog of artikel in het '+d.taal+'.\n';
+        ex+='JavaScript: function speelTekst(){speechSynthesis.cancel();const utt=new SpeechSynthesisUtterance(document.getElementById(\"fragmentTekst\").innerText);utt.lang=\"'+taalCode+'\";speechSynthesis.speak(utt);}\n';
+        ex+=playerKnoppen;
+        if(d.taal==='Spaans') ex+='\nGebruik UITSLUITEND lang es-ES (Spanje), NIET es-MX of es-US.';
+      }
+    }
+
+        // Intro/Theorie
+    if(document.getElementById('chkIntro')?.checked){
+      const its=[...document.querySelectorAll('input[name="introT"]:checked')].map(i=>i.value==='tekst'?'tekst':'luisterfragment');
+      const io=document.querySelector('input[name="introOef"]:checked')?.value||'nee';
+      const introVorm=its.length?its.join(' en '):'tekst';
+      ex+=`\n\nINTRO:\nBied een intro aan als ${introVorm}${io==='ja'?', gevolgd door oefeningen':''}.`;
+    }
+    if(document.getElementById('chkTheorie')?.checked){
+      const tts=[...document.querySelectorAll('input[name="theorieT"]:checked')].map(i=>i.value==='zinnen'?'nuttige zinnen':'woordenschat');
+      const to=document.querySelector('input[name="theorieOef"]:checked')?.value||'nee';
+      const theorieVorm=tts.length?tts.join(' en '):'nuttige zinnen';
+      ex+=`\n\nTHEORIE:\nBied theorie aan als ${theorieVorm}${to==='ja'?', gevolgd door oefeningen':''}.`;
+    }
+
+    // Groepsleden
+    if(curHC.id==='groep'){
+      const l=document.getElementById('f_leden')?.value;
+      if(l) ex+=`\n  - Groepsgrootte: ${l} per groep`;
+    }
+
+    // Toets
+    if(document.getElementById('chkToets')?.checked){
+      const pm=document.querySelector('input[name="puntenM"]:checked')?.value||'ai';
+      let toetsEx='\n\nTOETS:\nDit materiaal wordt als toets afgenomen. Voeg toezichtinstructies toe. Geef de puntentelling duidelijk aan per oefening in de opgave (bv. X pt/item).';
+      if(pm==='ai') toetsEx+='\nStel zelf een logische puntenverdeling voor op basis van het aantal oefeningen en items.';
+      else{
+        const pi=document.getElementById('f_pItem')?.value;
+        const pk=document.getElementById('f_pKlein')?.value;
+        const pg=document.getElementById('f_pGroot')?.value;
+        if(pi) toetsEx+=`\nPunten per item: ${pi}.`;
+        if(pk) toetsEx+=` Aftrek kleine fout: -${pk}.`;
+        if(pg) toetsEx+=` Aftrek grote fout: -${pg}.`;
+      }
+      ex+=toetsEx;
+    }
+
+    generatedPrompt=bouwPrompt(d,curSub.naam,sel,ex);
+  }
+
+  document.getElementById('pText').textContent=generatedPrompt;
+  document.getElementById('pUitleg').textContent=`Prompt voor: ${curSub?.naam||''} — ${d.vak||'[vak]'} — Niveau ${d.niveau} — ${d.taal}. Plak deze prompt in Claude, ChatGPT of een andere AI-tool.`;
+  document.getElementById('pOut').style.display='block';
+  document.getElementById('copyBtn').textContent='Kopieer prompt';
+  const showRubric=curSub&&(curSub.rubric||curHC.id==='groep');
+  document.getElementById('rubOffer').style.display=showRubric?'block':'none';
+  document.getElementById('pOut').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(e) {
+    console.error('Fout in generatePrompt:', e);
+    alert('Fout: ' + e.message);
+  }
+}
+
+// ═══ RUBRIC ══════════════════════════════════════════════════
+
+function rubricFormHTML(p){
+  return `<div class="fg"><label class="fl">Wat evalueer je?</label><div class="rg">
+    <label class="ri"><input type="radio" name="${p}t" value="Spreken"    onchange="onET('${p}')"><span class="rl"><span class="rl-main">Spreken</span></span></label>
+    <label class="ri"><input type="radio" name="${p}t" value="Schrijven"  onchange="onET('${p}')"><span class="rl"><span class="rl-main">Schrijven</span></span></label>
+    <label class="ri"><input type="radio" name="${p}t" value="Groepswerk" onchange="onET('${p}')"><span class="rl"><span class="rl-main">Groepswerk</span></span></label>
+  </div></div>
+  <div class="fg hidden" id="${p}cg"><label class="fl">Criteria (aanvinken)</label><div class="cb-grid" id="${p}cgrid"></div></div>
+  <div class="fg"><label class="fl">Aantal niveaus</label><div class="rg">
+    <label class="ri"><input type="radio" name="${p}n" value="3"><span class="rl"><span class="rl-main">3 niveaus</span></span></label>
+    <label class="ri"><input type="radio" name="${p}n" value="4" checked><span class="rl"><span class="rl-main">4 niveaus</span></span></label>
+    <label class="ri"><input type="radio" name="${p}n" value="5"><span class="rl"><span class="rl-main">5 niveaus</span></span></label>
+  </div></div>
+  <div class="fg"><label class="fl">Punten koppelen?</label><div class="rg">
+    <label class="ri"><input type="radio" name="${p}p" value="nee" checked onchange="onRP('${p}')"><span class="rl"><span class="rl-main">Nee</span></span></label>
+    <label class="ri"><input type="radio" name="${p}p" value="ja"        onchange="onRP('${p}')"><span class="rl"><span class="rl-main">Ja</span></span></label>
+  </div><div class="fb hidden" id="${p}pb"><label class="fl" for="${p}tot">Totaal punten</label><input type="number" id="${p}tot" min="1" max="100" placeholder="Bv. 20" style="max-width:120px;margin-top:6px;background:white;"></div></div>
+  <div class="fg" id="${p}og"><label class="fl" for="${p}opr">Omschrijf de opdracht die je evalueert</label><textarea id="${p}opr" rows="4" placeholder="Korte omschrijving van de taak."></textarea></div>`;
+}
+
+function onET(p){
+  const t=document.querySelector(`input[name="${p}t"]:checked`)?.value;
+  const cg=document.getElementById(`${p}cg`);
+  if(!t){cg.classList.add('hidden');return;}
+  document.getElementById(`${p}cgrid`).innerHTML=(CRIT[t]||[]).map(c=>`<label class="cb-item checked"><input type="checkbox" value="${c}" checked onchange="this.closest('.cb-item').classList.toggle('checked',this.checked)"> ${c}</label>`).join('');
+  cg.classList.remove('hidden');
+}
+
+function onRP(p){document.getElementById(`${p}pb`).classList.toggle('hidden',document.querySelector(`input[name="${p}p"]:checked`)?.value!=='ja');}
+
+function bouwRubricTekst(p,d){
+  const L=TL[d.taal]||TL['Nederlands'];
+  const et=document.querySelector(`input[name="${p}t"]:checked`)?.value||'[kies type]';
+  const niv=document.querySelector(`input[name="${p}n"]:checked`)?.value||'4';
+  const pnt=document.querySelector(`input[name="${p}p"]:checked`)?.value||'nee';
+  const tot=document.getElementById(`${p}tot`)?.value;
+  const crit=[...document.querySelectorAll(`#${p}cgrid input:checked`)].map(i=>i.value);
+  const opr=document.getElementById(`${p}opr`)?.value.trim()||'';
+  const pRegel=(pnt==='ja'&&tot)?`Koppel punten aan de niveaus. Totaal: ${tot} punten.`:'Koppel geen punten aan de niveaus.';
+  const oprRegel=opr?`\n  - Opdracht: ${opr}`:'';
+  return `Je bent taaldocent aan de VIVES Hogeschool.\n\n${VIVES}\n\nTAAL EN OPMAAK:\n${L.inst}${L.ac?'\n'+L.ac:''}\n\nINFOKADER:\n${L.ki}\n  - ${L.ti}: ${d.titel}\n  - ${L.od}: ${d.naam}\n  - ${L.bv}: ${d.groep}\n  - ${L.vk}: ${d.vak}\n  - ${L.nv}: ${d.niveau}\n\nRUBRIC:\nMaak een beoordelingsrubric voor ${et} met:\n  - Aantal niveaus: ${niv} (${NL[niv]})\n  - ${pRegel}\n  - Criteria: ${crit.join(', ')||'[selecteer criteria]'}${oprRegel}\n\nGenereer voor elk criterium op elk niveau een concrete beschrijvende zin in de tweede persoon enkelvoud (je/jouw). Vermijd vage termen. Voorbeeld bij Uitspraak / Uitstekend: "Je maakt geen enkele uitspraakfout en spreekt vlot en met een naturel accent."\n\nPresenteer als overzichtelijke tabel in VIVES-huisstijl.\n\n${L.bv2}`;
+}
+
+function toonRubricInline(){
+  const p='ri_';
+  document.getElementById('rubInlineInhoud').innerHTML=rubricFormHTML(p);
+  const og=document.getElementById(`${p}og`);if(og)og.classList.add('hidden');
+  if(curSub?.rubricType){const r=document.querySelector(`input[name="${p}t"][value="${curSub.rubricType}"]`);if(r){r.checked=true;onET(p);}}
+  else if(curHC?.id==='groep'){const r=document.querySelector(`input[name="${p}t"][value="Groepswerk"]`);if(r){r.checked=true;onET(p);}}
+  show('rubInlineCard');
+  hide('rubOffer');
+  document.getElementById('rubInlineCard').scrollIntoView({behavior:'smooth'});
+}
+
+function genRubricPrompt(p){
+  const d=getBase();
+  document.getElementById('rubText').textContent=bouwRubricTekst(p,d);
+  document.getElementById('rubOut').style.display='block';
+  document.getElementById('copyRubBtn').textContent='Kopieer rubric-prompt';
+  document.getElementById('rubOut').scrollIntoView({behavior:'smooth'});
+}
+
+// ═══ UTILS ════════════════════════════════════════════════════
+
+function copyText(src,btn,label){
+  const tekst=document.getElementById(src).textContent;
+  const gelukt=()=>{const b=document.getElementById(btn);b.textContent='Gekopieerd!';setTimeout(()=>{b.textContent=label;},2500);};
+  const mislukt=()=>{const b=document.getElementById(btn);b.textContent='Kopiëren lukte niet — selecteer de tekst en kopieer handmatig';setTimeout(()=>{b.textContent=label;},4000);};
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(tekst).then(gelukt).catch(()=>fallbackCopy(tekst,gelukt,mislukt));
+  } else {
+    fallbackCopy(tekst,gelukt,mislukt);
+  }
+}
+
+function fallbackCopy(tekst,gelukt,mislukt){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=tekst;
+    ta.style.position='fixed';ta.style.left='-9999px';ta.style.top='0';
+    document.body.appendChild(ta);
+    ta.focus();ta.select();
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    ok?gelukt():mislukt();
+  }catch(e){mislukt();}
+}
+
+// ═══ INIT ════════════════════════════════════════════════════
+
+document.getElementById('mainGrid').innerHTML=HC.map(h=>`
+  <div class="main-card" onclick="goLevel2('${h.id}')">
+    <h3>${h.naam}</h3>
+    <p>${h.beschr}</p>
+  </div>`).join('');
+
+// Eén keer koppelen: checkLuister regelt zelf dat het niets doet buiten de luistercategorie
+document.getElementById('subcatInhoud').addEventListener('change',checkLuister);
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('ScrIVES PWA: service worker actief'))
+      .catch(e => console.warn('SW fout:', e));
+  });
+}
+</script>
+</body>
+</html>
