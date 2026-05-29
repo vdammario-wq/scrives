@@ -1,7 +1,7 @@
 {
-  "name": "ScrIVES",
-  "short_name": "ScrIVES",
-  "description": "Kant-en-klare AI-prompts voor taaldocenten van VIVES Hogeschool",
+  "name": "OneScrIVES",
+  "short_name": "OneScrIVES",
+  "description": "Promptgenerator voor alle docenten — VIVES Hogeschool",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#efeee9",
